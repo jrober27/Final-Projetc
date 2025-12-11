@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from vote_gui import Ui_VoteWindow
-from vote_logic import Logic
+from vote_gui import *
+from vote_logic import *
 
 def main():
     app = QApplication([])
@@ -14,3 +14,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
