@@ -3,15 +3,15 @@ import os
 from PyQt6.QtWidgets import *
 from grade_gui import *
 
-# simple grade function
-def get_letter_grade(score, best_score):
-    if score >= best_score - 10:
+# letter grade logic
+def get_letter_grade(score):
+    if score >= 90:
         return "A"
-    elif score >= best_score - 20:
+    elif score >= 80:
         return "B"
-    elif score >= best_score - 30:
+    elif score >= 70:
         return "C"
-    elif score >= best_score - 40:
+    elif score >= 60:
         return "D"
     else:
         return "F"
@@ -19,9 +19,9 @@ def get_letter_grade(score, best_score):
 class GradeController:
     def __init__(self, ui):
         self.ui = ui
-        # connect submit button
+        #submit button
         self.ui.submit_Button.clicked.connect(self.save)
-        # update score boxes when attempts changes
+        # update score input boxes when attempts changes
         self.ui.Number_of_attempts_input.textChanged.connect(self._update_score_boxes)
         # hide messages and score boxes at start
         self._hide_messages()
@@ -75,9 +75,9 @@ class GradeController:
             return
 
         best = max(scores)
-        grades = [get_letter_grade(s, best) for s in scores]
+        grades = [get_letter_grade(s) for s in scores]
 
-        # summary stats
+        # summary stats for csv
         highest = max(scores)
         average = sum(scores) / len(scores)
 
@@ -92,7 +92,7 @@ class GradeController:
         self._clear_inputs()
 
     def _read_inputs(self):
-        # validate name
+        # name validation
         name = self.ui.Student_name_input.text().strip()
         if not name or not all(ch.isalpha() or ch.isspace() for ch in name):
             self.ui.enter_student_name_text.show()
@@ -141,21 +141,21 @@ class GradeController:
         padded_grades = grades + [""] * (4 - len(grades))
 
         final_score = average
-        final_grade = get_letter_grade(int(round(final_score)), highest)
-        highest_grade = get_letter_grade(highest, highest)
+        final_grade = get_letter_grade(int(round(average)))
+        highest_grade = get_letter_grade(highest)
 
-        # check if file is new/empty
+        # check if file is new or empty
         file_is_new = not os.path.exists(filename) or os.path.getsize(filename) == 0
 
         with open(filename, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
 
-            # header row only once
+            # header row
             if file_is_new:
                 writer.writerow(["Name", "Score 1", "Score 2", "Score 3", "Score 4", "Final", "Highest"])
 
             # student row
-            writer.writerow([name] + padded_scores + [f"{final_score:.2f}", highest])
+            writer.writerow([name] + padded_scores + [int(round(average)), highest])
 
             # grade row aligned under same headers
             writer.writerow(["Grades"] + padded_grades + [final_grade, highest_grade])
